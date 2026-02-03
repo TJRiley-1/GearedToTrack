@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const SITE_URL = 'https://tjriley-1.github.io/GearedToTrack/'
-const CUSTOM_DOMAIN = 'https://www.gearedtotrack.co.uk'
+const SITE_URL = 'https://www.gearedtotrack.co.uk'
 
 test.describe('Deployment Check', () => {
   test('GitHub Pages site loads', async ({ page }) => {
@@ -30,9 +29,4 @@ test.describe('Deployment Check', () => {
     await expect(page.getByRole('heading', { name: 'Progress Tracking' })).toBeVisible()
   })
 
-  test.skip('Custom domain loads (enable after DNS configured)', async ({ page }) => {
-    const response = await page.goto(CUSTOM_DOMAIN)
-    expect(response?.status()).toBeLessThan(400)
-    await expect(page).toHaveTitle(/GearedtoTrack/i)
-  })
 })
