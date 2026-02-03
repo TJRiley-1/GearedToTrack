@@ -1,8 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signInWithGoogle } from '../../lib/auth'
 
 export function GoogleSignInButton() {
   const [isLoading, setIsLoading] = useState(false)
+
+  // Reset loading state when user returns to page (e.g., after cancelling OAuth)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setIsLoading(false)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
 
   const handleSignIn = async () => {
     setIsLoading(true)
