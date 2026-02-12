@@ -1,81 +1,17 @@
-# GearedtoTrack - Project Reference
+## Workflow
 
-## Overview
-Track cycling web application for velodrome cyclists to manage gear ratios and lap times.
+Wait for the user to finish describing all issues before starting investigation or implementation. Do not begin exploring the codebase mid-list.
 
-## Hosting Configuration
+## Code Quality
 
-**IMPORTANT: This project uses a CUSTOM DOMAIN, not GitHub Pages subdirectory.**
+After making UI or JavaScript changes, always verify the app loads without blank screen errors by checking for syntax errors and runtime exceptions before committing.
 
-| Setting | Value |
-|---------|-------|
-| **Live URL** | https://www.gearedtotrack.co.uk |
-| **Hosting** | GitHub Pages |
-| **Repository** | https://github.com/TJRiley-1/GearedToTrack |
-| **Branch** | `main` |
+When removing a feature, audit ALL references: UI components, localStorage keys, event handlers, and related logic. Do a grep for the feature name before marking removal complete.
 
-### Critical Config - DO NOT CHANGE
-- `vite.config.ts` → `base: '/'` (NOT `/GearedToTrack/`)
-- `public/CNAME` → Must contain `www.gearedtotrack.co.uk`
-- `public/404.html` → Redirects to `/` (NOT `/GearedToTrack/`)
+## Debugging
 
-## Supabase Configuration
+When fixing bugs, identify the root cause before applying fixes. Avoid quick patches like setTimeout or surface-level workarounds — trace the actual problem first.
 
-| Setting | Value |
-|---------|-------|
-| **Project URL** | https://klljtobzcfgcwzcoputv.supabase.co |
-| **Credentials** | Hardcoded in `src/lib/supabase.ts` |
-| **Auth Provider** | Google OAuth |
+## Deployment
 
-### Auth Redirect URLs (configured in Supabase Dashboard)
-- Site URL: `https://www.gearedtotrack.co.uk`
-- Redirect URL: `https://www.gearedtotrack.co.uk/auth/callback`
-
-## Google OAuth
-
-| Setting | Value |
-|---------|-------|
-| **Client ID** | `349006262545-puounl67gr2eent7ec4ukij6ejr2ek1q.apps.googleusercontent.com` |
-| **Authorized Redirect URI** | `https://klljtobzcfgcwzcoputv.supabase.co/auth/v1/callback` |
-
-## Tech Stack
-- React 19 + Vite + TypeScript
-- Tailwind CSS (dark theme)
-- Zustand (state) + React Query (data fetching)
-- Supabase (database + auth)
-
-## Key Files
-```
-src/lib/supabase.ts      # Supabase client with hardcoded credentials
-src/store/authStore.ts   # Auth state management
-src/types/database.ts    # Database types
-public/CNAME             # Custom domain config
-vite.config.ts           # Build config (base path)
-.github/workflows/deploy.yml  # GitHub Pages deployment
-```
-
-## Database Tables
-- `profiles` - User profiles (extends auth.users)
-- `chainrings` - User's chainrings
-- `sprockets` - User's sprockets
-- `lap_sessions` - Training sessions
-- `lap_times` - Individual lap times
-
-## Testing
-```bash
-npx playwright test      # Run deployment tests
-npm run dev              # Local development
-npm run build            # Production build
-```
-
-## Common Issues
-
-### Site shows blank page
-Check that `vite.config.ts` has `base: '/'` for custom domain.
-
-### OAuth redirect error
-Ensure Google Cloud Console has the Supabase callback URL:
-`https://klljtobzcfgcwzcoputv.supabase.co/auth/v1/callback`
-
-### Button stuck loading after OAuth cancel
-Fixed with `visibilitychange` listener in `GoogleSignInButton.tsx`
+This project deploys via GitHub Pages. Always verify the build output directory is configured correctly (not serving source). Check deployment config before and after structural changes.
