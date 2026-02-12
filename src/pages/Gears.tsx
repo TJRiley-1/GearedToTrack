@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AppLayout, PageHeader } from '../components/layout'
 import { TabGroup } from '../components/common'
-import { RatiosTab, ChainringsList, SprocketsList } from '../components/gears'
+import { RatiosTab, ChainringsList, SprocketsList, SpeedCadenceCalc } from '../components/gears'
 
 const tabs = [
   { id: 'ratios', label: 'Ratios' },
   { id: 'chainrings', label: 'Chainrings' },
   { id: 'sprockets', label: 'Sprockets' },
+  { id: 'calculator', label: 'Calculator' },
 ]
 
 export function Gears() {
@@ -50,6 +51,7 @@ export function Gears() {
         {activeTab === 'sprockets' && (
           <SprocketsList showAddModal={showAdd} onCloseAddModal={handleCloseAddModal} />
         )}
+        {activeTab === 'calculator' && <SpeedCadenceCalc />}
       </div>
     </AppLayout>
   )

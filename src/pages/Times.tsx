@@ -19,8 +19,8 @@ export function Times() {
         title="Lap Times"
         subtitle="Track your velodrome performance"
         action={
-          <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
-            Add
+          <Button onClick={() => setIsAddModalOpen(true)}>
+            + New Session
           </Button>
         }
       />

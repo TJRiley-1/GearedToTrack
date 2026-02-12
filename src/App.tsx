@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { supabase } from './lib/supabase'
 import { useAuthStore } from './store/authStore'
 import { ProtectedRoute } from './components/layout'
-import { LoadingScreen } from './components/common'
+import { LoadingScreen, ToastContainer } from './components/common'
 import {
   Landing,
   AuthCallback,
@@ -106,6 +106,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppRoutes />
+        <ToastContainer />
       </BrowserRouter>
     </QueryClientProvider>
   )

@@ -3,6 +3,7 @@ import { Modal, Input, Select, Button } from '../common'
 import { useAddLapSession, useChainrings, useSprockets } from '../../hooks'
 import { useAuthStore } from '../../store/authStore'
 import { parseTime } from '../../lib/calculations'
+import { useToastStore } from '../../store/toastStore'
 import { EVENT_TYPES } from '../../types'
 
 interface AddLapTimeModalProps {
@@ -15,7 +16,9 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
   const { data: chainrings } = useChainrings()
   const { data: sprockets } = useSprockets()
   const addLapSession = useAddLapSession()
+  const addToast = useToastStore((s) => s.addToast)
 
+  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0])
   const [eventType, setEventType] = useState('')
   const [trackName, setTrackName] = useState('')
   const [trackLength, setTrackLength] = useState(profile?.default_track_length?.toString() || '250')
@@ -54,6 +57,7 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
       await addLapSession.mutateAsync({
         session: {
           event_type: eventType,
+          session_date: sessionDate,
           track_name: trackName.trim() || null,
           track_length: parseInt(trackLength, 10) || 250,
           chainring_id: chainringId || null,
@@ -62,6 +66,7 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
         },
         lapTimes,
       })
+      addToast('Session saved')
       handleClose()
     } catch (err) {
       setError('Failed to save session. Please try again.')
@@ -70,6 +75,7 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
   }
 
   const handleClose = () => {
+    setSessionDate(new Date().toISOString().split('T')[0])
     setEventType('')
     setTrackName('')
     setTrackLength(profile?.default_track_length?.toString() || '250')
@@ -106,6 +112,13 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
           options={eventOptions}
           placeholder="Select event type..."
           required
+        />
+
+        <Input
+          label="Session Date"
+          type="date"
+          value={sessionDate}
+          onChange={(e) => setSessionDate(e.target.value)}
         />
 
         <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const SITE_URL = 'https://www.gearedtotrack.co.uk'
+const SITE_URL = process.env.BASE_URL || 'https://www.gearedtotrack.co.uk'
 
 test.describe('Deployment Check', () => {
   test('GitHub Pages site loads', async ({ page }) => {

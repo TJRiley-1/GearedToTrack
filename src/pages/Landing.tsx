@@ -68,7 +68,8 @@ export function Landing() {
             className="h-24 w-auto"
           />
         </div>
-        <p className="text-gray-400 text-lg">Track cycling gear ratios & lap times</p>
+        <h1 className="text-2xl font-bold text-white mb-2">Your Track Cycling Companion</h1>
+        <p className="text-gray-400 text-lg">Calculate gear ratios, track lap times, and monitor your progress</p>
       </header>
 
       {/* Features */}
@@ -77,7 +78,7 @@ export function Landing() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="bg-navy-800 rounded-xl p-4 border border-navy-700 flex gap-4"
+              className="bg-navy-800 rounded-xl p-4 border border-navy-700 flex gap-4 hover:border-primary-500/30 transition-colors"
             >
               <div className="text-primary-500 flex-shrink-0">{feature.icon}</div>
               <div>
@@ -96,6 +97,7 @@ export function Landing() {
           <p className="text-center text-gray-500 text-xs mt-4">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
+          <p className="text-center text-gray-600 text-xs mt-2">v1.1.0</p>
         </div>
       </footer>
     </div>

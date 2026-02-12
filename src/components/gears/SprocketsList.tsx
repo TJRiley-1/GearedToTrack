@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Card, Button, EmptyState, Loading } from '../common'
+import { Card, Button, EmptyState, ConfirmModal } from '../common'
 import { useSprockets, useDeleteSprocket, useUpdateSprocket } from '../../hooks'
+import { useToastStore } from '../../store/toastStore'
 import { AddSprocketModal } from './AddSprocketModal'
 import type { Sprocket } from '../../types'
 
@@ -15,16 +16,20 @@ export function SprocketsList({ showAddModal = false, onCloseAddModal }: Sprocke
   const updateSprocket = useUpdateSprocket()
   const [isAddModalOpen, setIsAddModalOpen] = useState(showAddModal)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const addToast = useToastStore((s) => s.addToast)
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this sprocket?')) return
     setDeletingId(id)
     try {
       await deleteSprocket.mutateAsync(id)
+      addToast('Sprocket deleted')
     } catch (err) {
       console.error(err)
+      addToast('Failed to delete sprocket', 'error')
     } finally {
       setDeletingId(null)
+      setConfirmDeleteId(null)
     }
   }
 
@@ -46,8 +51,23 @@ export function SprocketsList({ showAddModal = false, onCloseAddModal }: Sprocke
 
   if (isLoading) {
     return (
-      <div className="py-12">
-        <Loading text="Loading sprockets..." />
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <div className="h-4 bg-navy-700 rounded w-20 animate-pulse" />
+          <div className="h-8 bg-navy-700 rounded w-14 animate-pulse" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="flex items-center justify-between animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 bg-navy-700 rounded" />
+              <div>
+                <div className="h-5 bg-navy-700 rounded w-12 mb-1" />
+                <div className="h-3 bg-navy-700 rounded w-20" />
+              </div>
+            </div>
+            <div className="w-5 h-5 bg-navy-700 rounded" />
+          </Card>
+        ))}
       </div>
     )
   }
@@ -63,6 +83,7 @@ export function SprocketsList({ showAddModal = false, onCloseAddModal }: Sprocke
           }
           title="No sprockets yet"
           description="Add your first sprocket to start calculating gear ratios"
+          tips={['Common track sprockets: 14T, 15T, 16T', 'Sprint events often use 14T or 15T']}
           action={
             <Button onClick={() => setIsAddModalOpen(true)}>Add Sprocket</Button>
           }
@@ -114,7 +135,7 @@ export function SprocketsList({ showAddModal = false, onCloseAddModal }: Sprocke
               </div>
             </div>
             <button
-              onClick={() => handleDelete(sprocket.id)}
+              onClick={() => setConfirmDeleteId(sprocket.id)}
               disabled={deletingId === sprocket.id}
               className="text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
             >
@@ -129,6 +150,17 @@ export function SprocketsList({ showAddModal = false, onCloseAddModal }: Sprocke
       <AddSprocketModal
         isOpen={isAddModalOpen || showAddModal}
         onClose={handleCloseModal}
+      />
+
+      <ConfirmModal
+        isOpen={confirmDeleteId !== null}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+        title="Delete Sprocket"
+        message="Are you sure you want to delete this sprocket?"
+        confirmText="Delete"
+        variant="danger"
+        isLoading={deletingId !== null}
       />
     </>
   )

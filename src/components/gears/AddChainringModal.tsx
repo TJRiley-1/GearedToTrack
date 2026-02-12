@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Modal, Input, Button } from '../common'
 import { useAddChainring } from '../../hooks'
+import { useToastStore } from '../../store/toastStore'
 
 interface AddChainringModalProps {
   isOpen: boolean
@@ -14,6 +15,7 @@ export function AddChainringModal({ isOpen, onClose }: AddChainringModalProps) {
   const [error, setError] = useState('')
 
   const addChainring = useAddChainring()
+  const addToast = useToastStore((s) => s.addToast)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +33,7 @@ export function AddChainringModal({ isOpen, onClose }: AddChainringModalProps) {
         brand: brand.trim() || null,
         purchase_date: purchaseDate || null,
       })
+      addToast('Chainring added')
       handleClose()
     } catch (err) {
       setError('Failed to add chainring. Please try again.')

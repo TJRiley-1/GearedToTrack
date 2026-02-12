@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Card, Button, EmptyState, Loading } from '../common'
+import { Card, Button, EmptyState, ConfirmModal } from '../common'
 import { useChainrings, useDeleteChainring, useUpdateChainring } from '../../hooks'
+import { useToastStore } from '../../store/toastStore'
 import { AddChainringModal } from './AddChainringModal'
 import type { Chainring } from '../../types'
 
@@ -15,16 +16,20 @@ export function ChainringsList({ showAddModal = false, onCloseAddModal }: Chainr
   const updateChainring = useUpdateChainring()
   const [isAddModalOpen, setIsAddModalOpen] = useState(showAddModal)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const addToast = useToastStore((s) => s.addToast)
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this chainring?')) return
     setDeletingId(id)
     try {
       await deleteChainring.mutateAsync(id)
+      addToast('Chainring deleted')
     } catch (err) {
       console.error(err)
+      addToast('Failed to delete chainring', 'error')
     } finally {
       setDeletingId(null)
+      setConfirmDeleteId(null)
     }
   }
 
@@ -46,8 +51,23 @@ export function ChainringsList({ showAddModal = false, onCloseAddModal }: Chainr
 
   if (isLoading) {
     return (
-      <div className="py-12">
-        <Loading text="Loading chainrings..." />
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <div className="h-4 bg-navy-700 rounded w-20 animate-pulse" />
+          <div className="h-8 bg-navy-700 rounded w-14 animate-pulse" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="flex items-center justify-between animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 bg-navy-700 rounded" />
+              <div>
+                <div className="h-5 bg-navy-700 rounded w-12 mb-1" />
+                <div className="h-3 bg-navy-700 rounded w-20" />
+              </div>
+            </div>
+            <div className="w-5 h-5 bg-navy-700 rounded" />
+          </Card>
+        ))}
       </div>
     )
   }
@@ -63,6 +83,7 @@ export function ChainringsList({ showAddModal = false, onCloseAddModal }: Chainr
           }
           title="No chainrings yet"
           description="Add your first chainring to start calculating gear ratios"
+          tips={['Common track chainrings: 49T, 50T, 51T, 52T', 'Most track cyclists use 48T–54T range']}
           action={
             <Button onClick={() => setIsAddModalOpen(true)}>Add Chainring</Button>
           }
@@ -114,7 +135,7 @@ export function ChainringsList({ showAddModal = false, onCloseAddModal }: Chainr
               </div>
             </div>
             <button
-              onClick={() => handleDelete(chainring.id)}
+              onClick={() => setConfirmDeleteId(chainring.id)}
               disabled={deletingId === chainring.id}
               className="text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
             >
@@ -129,6 +150,17 @@ export function ChainringsList({ showAddModal = false, onCloseAddModal }: Chainr
       <AddChainringModal
         isOpen={isAddModalOpen || showAddModal}
         onClose={handleCloseModal}
+      />
+
+      <ConfirmModal
+        isOpen={confirmDeleteId !== null}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+        title="Delete Chainring"
+        message="Are you sure you want to delete this chainring?"
+        confirmText="Delete"
+        variant="danger"
+        isLoading={deletingId !== null}
       />
     </>
   )

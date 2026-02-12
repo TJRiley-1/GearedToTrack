@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Modal, Input, Button } from '../common'
 import { useAddSprocket } from '../../hooks'
+import { useToastStore } from '../../store/toastStore'
 
 interface AddSprocketModalProps {
   isOpen: boolean
@@ -14,6 +15,7 @@ export function AddSprocketModal({ isOpen, onClose }: AddSprocketModalProps) {
   const [error, setError] = useState('')
 
   const addSprocket = useAddSprocket()
+  const addToast = useToastStore((s) => s.addToast)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +33,7 @@ export function AddSprocketModal({ isOpen, onClose }: AddSprocketModalProps) {
         brand: brand.trim() || null,
         purchase_date: purchaseDate || null,
       })
+      addToast('Sprocket added')
       handleClose()
     } catch (err) {
       setError('Failed to add sprocket. Please try again.')
