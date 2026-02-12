@@ -6,9 +6,16 @@
     <title>GearedtoTrack</title>
     <script>
       // SPA routing fallback for GitHub Pages
-      // Redirect all 404s to index.html with the original path as a query param
-      const path = window.location.pathname + window.location.search + window.location.hash;
-      window.location.replace('/' + '?p=' + encodeURIComponent(path));
+      // Converts the path and query into a special format that index.html can restore,
+      // while keeping the hash fragment intact for OAuth callbacks
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        '/?/' +
+        l.pathname.slice(1).replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
     </script>
   </head>
   <body>
