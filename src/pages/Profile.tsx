@@ -4,8 +4,7 @@ import { AppLayout, PageHeader } from '../components/layout'
 import { Card, Button, Modal } from '../components/common'
 import { UserCard, BikeSetup, DataSharingSettings } from '../components/profile'
 import { useAuthStore } from '../store/authStore'
-
-const APP_VERSION = '1.1.0'
+import { APP_VERSION } from '../version'
 
 export function Profile() {
   const navigate = useNavigate()

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { GoogleSignInButton } from '../components/auth'
 import { useAuthStore } from '../store/authStore'
+import { APP_VERSION } from '../version'
 
 const features = [
   {
@@ -97,7 +98,7 @@ export function Landing() {
           <p className="text-center text-gray-500 text-xs mt-4">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
-          <p className="text-center text-gray-600 text-xs mt-2">v1.1.0</p>
+          <p className="text-center text-gray-600 text-xs mt-2">v{APP_VERSION}</p>
         </div>
       </footer>
     </div>

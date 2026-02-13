@@ -19,6 +19,10 @@ Before any audit, feature work, or bug investigation, verify the critical user p
 
 Use `/bug-fix` to run the full bug fix protocol including critical path audit.
 
+## Versioning
+
+**Every commit that will be pushed MUST bump the version.** The single source of truth is `src/version.ts`. Update the `APP_VERSION` there — it is imported by `Landing.tsx` and `Profile.tsx`. Also update `version` in `package.json` to match. Use semver: patch for fixes (1.2.1), minor for features (1.3.0), major for breaking changes (2.0.0). The version displays on the landing page footer and Profile → About so the user can verify which build is deployed.
+
 ## Deployment
 
 This project deploys via GitHub Pages with SPA routing via 404.html → index.html redirect.
