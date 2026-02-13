@@ -28,16 +28,7 @@ function AppRoutes() {
   const { initialize, setUser, setSession, fetchProfile, isLoading } = useAuthStore()
 
   useEffect(() => {
-    // Skip initialize on the auth callback page — let AuthCallback
-    // handle the PKCE code exchange to avoid a race condition where
-    // getSession() consumes the code before exchangeCodeForSession() runs
-    const isAuthCallback = window.location.pathname === '/auth/callback'
-    if (!isAuthCallback) {
-      initialize()
-    } else {
-      // Still need to mark loading as done so the routes render
-      useAuthStore.setState({ isLoading: false })
-    }
+    initialize()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {

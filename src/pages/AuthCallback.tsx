@@ -7,59 +7,50 @@ import { Button } from '../components/common'
 
 export function AuthCallback() {
   const navigate = useNavigate()
-  const { setUser, setSession, fetchProfile } = useAuthStore()
+  const { user } = useAuthStore()
   const [error, setError] = useState<string | null>(null)
 
+  // Watch for the auth store to receive a user (set by onAuthStateChange in App.tsx).
+  // Supabase's detectSessionInUrl handles extracting tokens from the URL automatically.
   useEffect(() => {
-    const handleCallback = async () => {
+    if (!user) return
+
+    const checkOnboarding = async () => {
       try {
-        // For PKCE flow: extract code from URL and exchange for session
-        const url = new URL(window.location.href)
-        const code = url.searchParams.get('code')
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .single()
 
-        let session
-
-        if (code) {
-          // PKCE flow — exchange the code for a session
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-          if (exchangeError) throw exchangeError
-          session = data.session
+        if (profile?.onboarding_completed) {
+          navigate('/home', { replace: true })
         } else {
-          // Implicit flow fallback — tokens may be in the hash fragment
-          const { data: { session: existingSession }, error: sessionError } = await supabase.auth.getSession()
-          if (sessionError) throw sessionError
-          session = existingSession
-        }
-
-        if (session) {
-          setUser(session.user)
-          setSession(session)
-          await fetchProfile()
-
-          // Check if profile exists and onboarding is complete
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('id', session.user.id)
-            .single()
-
-          if (profile?.onboarding_completed) {
-            navigate('/home', { replace: true })
-          } else {
-            navigate('/onboarding', { replace: true })
-          }
-        } else {
-          setError('No session received. Please try signing in again.')
+          navigate('/onboarding', { replace: true })
         }
       } catch (err) {
-        console.error('Auth callback error:', err)
-        const message = err instanceof Error ? err.message : 'An unknown error occurred'
-        setError(message)
+        console.error('Profile check error:', err)
+        navigate('/onboarding', { replace: true })
       }
     }
 
-    handleCallback()
-  }, [navigate, setUser, setSession, fetchProfile])
+    checkOnboarding()
+  }, [user, navigate])
+
+  // Timeout: if no session arrives within 10 seconds, something went wrong
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!user) {
+        setError(
+          'Authentication timed out. This usually means the redirect URL ' +
+          'is not configured in Supabase (Authentication → URL Configuration → Redirect URLs). ' +
+          'Ensure https://www.gearedtotrack.co.uk/auth/callback is in the allowed list.'
+        )
+      }
+    }, 10000)
+
+    return () => clearTimeout(timeout)
+  }, [user])
 
   if (error) {
     return (
