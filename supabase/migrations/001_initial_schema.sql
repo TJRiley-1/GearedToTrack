@@ -82,68 +82,69 @@ ALTER TABLE lap_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lap_times ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for profiles
+-- Use (select auth.uid()) to evaluate once per query, not per row
 CREATE POLICY "Users can view own profile"
   ON profiles FOR SELECT
-  USING (auth.uid() = id);
+  USING ((select auth.uid()) = id);
 
 CREATE POLICY "Users can insert own profile"
   ON profiles FOR INSERT
-  WITH CHECK (auth.uid() = id);
+  WITH CHECK ((select auth.uid()) = id);
 
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
-  USING (auth.uid() = id);
+  USING ((select auth.uid()) = id);
 
 -- RLS Policies for chainrings
 CREATE POLICY "Users can view own chainrings"
   ON chainrings FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert own chainrings"
   ON chainrings FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update own chainrings"
   ON chainrings FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete own chainrings"
   ON chainrings FOR DELETE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 -- RLS Policies for sprockets
 CREATE POLICY "Users can view own sprockets"
   ON sprockets FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert own sprockets"
   ON sprockets FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update own sprockets"
   ON sprockets FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete own sprockets"
   ON sprockets FOR DELETE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 -- RLS Policies for lap_sessions
 CREATE POLICY "Users can view own sessions"
   ON lap_sessions FOR SELECT
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert own sessions"
   ON lap_sessions FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update own sessions"
   ON lap_sessions FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete own sessions"
   ON lap_sessions FOR DELETE
-  USING (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id);
 
 -- RLS Policies for lap_times (through session ownership)
 CREATE POLICY "Users can view lap times of own sessions"
@@ -152,7 +153,7 @@ CREATE POLICY "Users can view lap times of own sessions"
     EXISTS (
       SELECT 1 FROM lap_sessions
       WHERE lap_sessions.id = lap_times.session_id
-      AND lap_sessions.user_id = auth.uid()
+      AND lap_sessions.user_id = (select auth.uid())
     )
   );
 
@@ -162,7 +163,7 @@ CREATE POLICY "Users can insert lap times to own sessions"
     EXISTS (
       SELECT 1 FROM lap_sessions
       WHERE lap_sessions.id = lap_times.session_id
-      AND lap_sessions.user_id = auth.uid()
+      AND lap_sessions.user_id = (select auth.uid())
     )
   );
 
@@ -172,7 +173,7 @@ CREATE POLICY "Users can update lap times of own sessions"
     EXISTS (
       SELECT 1 FROM lap_sessions
       WHERE lap_sessions.id = lap_times.session_id
-      AND lap_sessions.user_id = auth.uid()
+      AND lap_sessions.user_id = (select auth.uid())
     )
   );
 
@@ -182,7 +183,7 @@ CREATE POLICY "Users can delete lap times of own sessions"
     EXISTS (
       SELECT 1 FROM lap_sessions
       WHERE lap_sessions.id = lap_times.session_id
-      AND lap_sessions.user_id = auth.uid()
+      AND lap_sessions.user_id = (select auth.uid())
     )
   );
 
@@ -193,7 +194,8 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = '';
 
 -- Trigger for profiles updated_at
 CREATE TRIGGER update_profiles_updated_at
@@ -205,7 +207,7 @@ CREATE TRIGGER update_profiles_updated_at
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, name, email)
+  INSERT INTO public.profiles (id, name, email)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', 'User'),
@@ -213,7 +215,8 @@ BEGIN
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = '';
 
 -- Trigger to create profile when user signs up
 CREATE TRIGGER on_auth_user_created
