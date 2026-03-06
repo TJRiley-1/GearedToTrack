@@ -2,13 +2,22 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AppLayout, PageHeader } from '../components/layout'
 import { TabGroup } from '../components/common'
-import { RatiosTab, ChainringsList, SprocketsList, SpeedCadenceCalc } from '../components/gears'
+import {
+  RatiosTab,
+  ChainringsList,
+  SprocketsList,
+  SpeedCadenceCalc,
+  GearComparisonTab,
+  GearRecommendationsTab,
+} from '../components/gears'
 
 const tabs = [
   { id: 'ratios', label: 'Ratios' },
   { id: 'chainrings', label: 'Chainrings' },
   { id: 'sprockets', label: 'Sprockets' },
   { id: 'calculator', label: 'Calculator' },
+  { id: 'compare', label: 'Compare' },
+  { id: 'advice', label: 'Advice' },
 ]
 
 export function Gears() {
@@ -42,7 +51,9 @@ export function Gears() {
       />
 
       <div className="space-y-6">
-        <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        <div className="overflow-x-auto -mx-4 px-4">
+          <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
+        </div>
 
         {activeTab === 'ratios' && <RatiosTab />}
         {activeTab === 'chainrings' && (
@@ -52,6 +63,8 @@ export function Gears() {
           <SprocketsList showAddModal={showAdd} onCloseAddModal={handleCloseAddModal} />
         )}
         {activeTab === 'calculator' && <SpeedCadenceCalc />}
+        {activeTab === 'compare' && <GearComparisonTab />}
+        {activeTab === 'advice' && <GearRecommendationsTab />}
       </div>
     </AppLayout>
   )

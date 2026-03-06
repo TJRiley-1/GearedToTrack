@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
-import type { LapSession, LapSessionInsert, LapSessionWithDetails, LapTimeInsert, Chainring, Sprocket, LapTime } from '../types'
+import type { LapSession, LapSessionInsert, LapSessionUpdate, LapSessionWithDetails, LapTimeInsert, Chainring, Sprocket, LapTime } from '../types'
 
 export function useLapSessions(eventTypeFilter?: string) {
   const { user } = useAuthStore()
@@ -131,6 +131,26 @@ export function useAddLapSession() {
       }
 
       return sessionData as LapSession
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lap_sessions'] })
+    },
+  })
+}
+
+export function useUpdateLapSession() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: LapSessionUpdate }) => {
+      const { data, error } = await supabase
+        .from('lap_sessions')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data as LapSession
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lap_sessions'] })

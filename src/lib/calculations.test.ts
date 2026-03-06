@@ -9,6 +9,11 @@ import {
   parseTime,
   calculateAverageTime,
   calculateBestTime,
+  calculateSkidPatches,
+  estimatePower,
+  calculateEvenSplits,
+  calculateNegativeSplits,
+  calculateProgressiveSplits,
 } from './calculations'
 
 describe('calculateRatio', () => {
@@ -135,5 +140,129 @@ describe('calculateBestTime', () => {
 
   it('returns null for empty array', () => {
     expect(calculateBestTime([])).toBeNull()
+  })
+})
+
+describe('calculateSkidPatches', () => {
+  it('calculates skid patches for 49/15', () => {
+    // GCD(49, 15) = 1, so patches = 15/1 = 15
+    expect(calculateSkidPatches(49, 15)).toBe(15)
+  })
+
+  it('calculates skid patches for 48/16', () => {
+    // GCD(48, 16) = 16, so patches = 16/16 = 1
+    expect(calculateSkidPatches(48, 16)).toBe(1)
+  })
+
+  it('calculates skid patches for 50/14', () => {
+    // GCD(50, 14) = 2, so patches = 14/2 = 7
+    expect(calculateSkidPatches(50, 14)).toBe(7)
+  })
+
+  it('calculates skid patches for 51/14', () => {
+    // GCD(51, 14) = 1, so patches = 14/1 = 14
+    expect(calculateSkidPatches(51, 14)).toBe(14)
+  })
+})
+
+describe('estimatePower', () => {
+  it('estimates power for a typical flying lap', () => {
+    const result = estimatePower({
+      timeSeconds: 13.5,
+      distanceMeters: 250,
+      riderWeightKg: 75,
+    })
+    expect(result.totalWatts).toBeGreaterThan(200)
+    expect(result.totalWatts).toBeLessThan(2000)
+    expect(result.wattsPerKg).toBeCloseTo(result.totalWatts / 75)
+    expect(result.speedKmh).toBeCloseTo(result.speedMs * 3.6)
+    expect(result.aeroPower).toBeGreaterThan(result.rollingPower) // aero dominates at track speed
+  })
+
+  it('uses custom physics parameters', () => {
+    const base = estimatePower({
+      timeSeconds: 13.5,
+      distanceMeters: 250,
+      riderWeightKg: 75,
+    })
+    const aero = estimatePower({
+      timeSeconds: 13.5,
+      distanceMeters: 250,
+      riderWeightKg: 75,
+      cdA: 0.5, // worse aero position
+    })
+    expect(aero.totalWatts).toBeGreaterThan(base.totalWatts)
+  })
+
+  it('power increases with speed', () => {
+    const slow = estimatePower({
+      timeSeconds: 20,
+      distanceMeters: 250,
+      riderWeightKg: 75,
+    })
+    const fast = estimatePower({
+      timeSeconds: 13,
+      distanceMeters: 250,
+      riderWeightKg: 75,
+    })
+    expect(fast.totalWatts).toBeGreaterThan(slow.totalWatts)
+  })
+})
+
+describe('calculateEvenSplits', () => {
+  it('splits evenly', () => {
+    const splits = calculateEvenSplits(60000, 4)
+    expect(splits).toHaveLength(4)
+    expect(splits.every((s) => s === 15000)).toBe(true)
+  })
+
+  it('returns empty for 0 laps', () => {
+    expect(calculateEvenSplits(60000, 0)).toHaveLength(0)
+  })
+
+  it('total matches target', () => {
+    const splits = calculateEvenSplits(67890, 7)
+    const total = splits.reduce((a, b) => a + b, 0)
+    expect(total).toBeCloseTo(67890, 0)
+  })
+})
+
+describe('calculateNegativeSplits', () => {
+  it('gets faster over laps', () => {
+    const splits = calculateNegativeSplits(60000, 4, 0.5)
+    expect(splits).toHaveLength(4)
+    // First lap should be slowest, last should be fastest
+    expect(splits[0]).toBeGreaterThan(splits[3])
+  })
+
+  it('total matches target', () => {
+    const splits = calculateNegativeSplits(60000, 4, 0.8)
+    const total = splits.reduce((a, b) => a + b, 0)
+    expect(total).toBeCloseTo(60000, 0)
+  })
+
+  it('single lap returns target time', () => {
+    const splits = calculateNegativeSplits(15000, 1)
+    expect(splits).toEqual([15000])
+  })
+
+  it('zero aggression gives even splits', () => {
+    const splits = calculateNegativeSplits(60000, 4, 0)
+    expect(splits.every((s) => Math.abs(s - 15000) < 0.01)).toBe(true)
+  })
+})
+
+describe('calculateProgressiveSplits', () => {
+  it('gets slower over laps (front-loaded)', () => {
+    const splits = calculateProgressiveSplits(60000, 4, 0.5)
+    expect(splits).toHaveLength(4)
+    // First lap should be fastest, last should be slowest
+    expect(splits[0]).toBeLessThan(splits[3])
+  })
+
+  it('total matches target', () => {
+    const splits = calculateProgressiveSplits(60000, 4, 0.8)
+    const total = splits.reduce((a, b) => a + b, 0)
+    expect(total).toBeCloseTo(60000, 0)
   })
 })

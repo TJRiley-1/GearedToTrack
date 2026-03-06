@@ -129,3 +129,129 @@ export function calculateBestTime(timesMs: number[]): number | null {
   if (timesMs.length === 0) return null
   return Math.min(...timesMs)
 }
+
+/**
+ * Greatest common divisor (for skid patches)
+ */
+function gcd(a: number, b: number): number {
+  a = Math.abs(a)
+  b = Math.abs(b)
+  while (b) {
+    ;[a, b] = [b, a % b]
+  }
+  return a
+}
+
+/**
+ * Calculate skid patches for a fixed gear
+ * The number of distinct contact points on the tire when skidding
+ */
+export function calculateSkidPatches(chainring: number, sprocket: number): number {
+  return sprocket / gcd(chainring, sprocket)
+}
+
+/**
+ * Estimate power from lap time using simplified physics model
+ * P_total = P_aero + P_rolling
+ * P_aero = 0.5 * rho * CdA * v^3
+ * P_rolling = Crr * m * g * v
+ */
+export function estimatePower(inputs: {
+  timeSeconds: number
+  distanceMeters: number
+  riderWeightKg: number
+  bikeWeightKg?: number
+  cdA?: number
+  crr?: number
+  airDensity?: number
+}): {
+  totalWatts: number
+  wattsPerKg: number
+  aeroPower: number
+  rollingPower: number
+  speedMs: number
+  speedKmh: number
+} {
+  const bikeWeight = inputs.bikeWeightKg ?? 8
+  const cdA = inputs.cdA ?? 0.32
+  const crr = inputs.crr ?? 0.002
+  const rho = inputs.airDensity ?? 1.2
+  const g = 9.81
+
+  const totalMass = inputs.riderWeightKg + bikeWeight
+  const speedMs = inputs.distanceMeters / inputs.timeSeconds
+  const speedKmh = speedMs * 3.6
+
+  const aeroPower = 0.5 * rho * cdA * Math.pow(speedMs, 3)
+  const rollingPower = crr * totalMass * g * speedMs
+
+  const totalWatts = aeroPower + rollingPower
+  const wattsPerKg = totalWatts / inputs.riderWeightKg
+
+  return { totalWatts, wattsPerKg, aeroPower, rollingPower, speedMs, speedKmh }
+}
+
+/**
+ * Calculate even splits for a target time
+ */
+export function calculateEvenSplits(targetMs: number, lapCount: number): number[] {
+  if (lapCount <= 0) return []
+  const perLap = targetMs / lapCount
+  return Array.from({ length: lapCount }, () => perLap)
+}
+
+/**
+ * Calculate negative splits (get faster each lap)
+ * aggression 0-1 controls how much faster later laps are
+ */
+export function calculateNegativeSplits(
+  targetMs: number,
+  lapCount: number,
+  aggression: number = 0.5
+): number[] {
+  if (lapCount <= 0) return []
+  if (lapCount === 1) return [targetMs]
+
+  // Linear decrease: first lap is slowest, last lap is fastest
+  // The spread is controlled by aggression (0 = even, 1 = max spread)
+  const evenSplit = targetMs / lapCount
+  const maxSpread = evenSplit * 0.3 * aggression // up to 30% spread at full aggression
+
+  const splits: number[] = []
+  for (let i = 0; i < lapCount; i++) {
+    // Linearly interpolate from +spread to -spread
+    const factor = 1 - (2 * i) / (lapCount - 1)
+    splits.push(evenSplit + maxSpread * factor)
+  }
+
+  // Normalize to ensure total matches target exactly
+  const total = splits.reduce((a, b) => a + b, 0)
+  const scale = targetMs / total
+  return splits.map((s) => s * scale)
+}
+
+/**
+ * Calculate progressive splits (get slower each lap — front-loaded effort)
+ * aggression 0-1 controls how much faster early laps are
+ */
+export function calculateProgressiveSplits(
+  targetMs: number,
+  lapCount: number,
+  aggression: number = 0.5
+): number[] {
+  if (lapCount <= 0) return []
+  if (lapCount === 1) return [targetMs]
+
+  const evenSplit = targetMs / lapCount
+  const maxSpread = evenSplit * 0.3 * aggression
+
+  const splits: number[] = []
+  for (let i = 0; i < lapCount; i++) {
+    const factor = (2 * i) / (lapCount - 1) - 1
+    splits.push(evenSplit + maxSpread * factor)
+  }
+
+  const total = splits.reduce((a, b) => a + b, 0)
+  const scale = targetMs / total
+  return splits.map((s) => s * scale)
+}

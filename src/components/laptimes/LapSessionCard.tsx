@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Card } from '../common'
 import { formatTime, calculateBestTime, calculateAverageTime } from '../../lib/calculations'
 import type { LapSessionWithDetails } from '../../types'
@@ -5,9 +6,10 @@ import type { LapSessionWithDetails } from '../../types'
 interface LapSessionCardProps {
   session: LapSessionWithDetails
   onDelete?: (id: string) => void
+  onUpdateRpe?: (id: string, rpe: number) => void
 }
 
-export function LapSessionCard({ session, onDelete }: LapSessionCardProps) {
+export function LapSessionCard({ session, onDelete, onUpdateRpe }: LapSessionCardProps) {
   const lapTimes = session.lap_times?.map((lt) => lt.time_ms) || []
   const bestTime = calculateBestTime(lapTimes)
   const avgTime = calculateAverageTime(lapTimes)
@@ -89,9 +91,65 @@ export function LapSessionCard({ session, onDelete }: LapSessionCardProps) {
         </div>
       )}
 
+      {/* RPE display or inline add */}
+      {session.rpe ? (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">RPE</span>
+          <span className="text-sm font-medium text-primary-500">{session.rpe}/10</span>
+        </div>
+      ) : onUpdateRpe ? (
+        <InlineRpeAdd sessionId={session.id} onSave={onUpdateRpe} />
+      ) : null}
+
       {session.notes && (
         <p className="text-gray-400 text-sm italic">{session.notes}</p>
       )}
     </Card>
+  )
+}
+
+function InlineRpeAdd({ sessionId, onSave }: { sessionId: string; onSave: (id: string, rpe: number) => void }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [value, setValue] = useState('5')
+
+  if (!isEditing) {
+    return (
+      <button
+        onClick={() => setIsEditing(true)}
+        className="text-xs text-gray-500 hover:text-primary-400 transition-colors"
+      >
+        + Add RPE
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-gray-500">RPE</span>
+      <input
+        type="range"
+        min="1"
+        max="10"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="w-24 accent-primary-500"
+      />
+      <span className="text-sm font-medium text-primary-500 w-6 text-center">{value}</span>
+      <button
+        onClick={() => {
+          onSave(sessionId, parseInt(value, 10))
+          setIsEditing(false)
+        }}
+        className="text-xs text-primary-500 hover:text-primary-400"
+      >
+        Save
+      </button>
+      <button
+        onClick={() => setIsEditing(false)}
+        className="text-xs text-gray-500 hover:text-gray-300"
+      >
+        Cancel
+      </button>
+    </div>
   )
 }

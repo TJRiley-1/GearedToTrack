@@ -127,6 +127,7 @@ export interface Database {
           chainring_id: string | null
           sprocket_id: string | null
           notes: string | null
+          rpe: number | null
           session_date: string
           created_at: string
         }
@@ -139,6 +140,7 @@ export interface Database {
           chainring_id?: string | null
           sprocket_id?: string | null
           notes?: string | null
+          rpe?: number | null
           session_date?: string
           created_at?: string
         }
@@ -151,6 +153,7 @@ export interface Database {
           chainring_id?: string | null
           sprocket_id?: string | null
           notes?: string | null
+          rpe?: number | null
           session_date?: string
           created_at?: string
         }
@@ -185,7 +188,19 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_community_benchmarks: {
+        Args: Record<string, never>
+        Returns: {
+          event_type: string
+          track_length: number
+          sample_size: number
+          p10_ms: number
+          p25_ms: number
+          p50_ms: number
+          p75_ms: number
+          p90_ms: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

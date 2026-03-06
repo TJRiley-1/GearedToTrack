@@ -29,8 +29,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true, error: null })
 
-      // Get current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      // Get current session with a 5-second timeout so we don't hang
+      // against an unreachable Supabase instance
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Auth initialization timed out')), 5000)
+      )
+      const sessionPromise = supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeout])
       if (sessionError) throw sessionError
 
       if (session?.user) {
@@ -38,6 +43,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await get().fetchProfile()
       }
     } catch (error) {
+      console.warn('Auth initialization failed:', (error as Error).message)
       set({ error: (error as Error).message })
     } finally {
       set({ isLoading: false })

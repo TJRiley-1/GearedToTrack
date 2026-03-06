@@ -25,6 +25,7 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
   const [chainringId, setChainringId] = useState('')
   const [sprocketId, setSprocketId] = useState('')
   const [lapTimesInput, setLapTimesInput] = useState('')
+  const [rpe, setRpe] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
 
@@ -62,6 +63,7 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
           track_length: parseInt(trackLength, 10) || 250,
           chainring_id: chainringId || null,
           sprocket_id: sprocketId || null,
+          rpe: rpe ? parseInt(rpe, 10) : null,
           notes: notes.trim() || null,
         },
         lapTimes,
@@ -82,6 +84,7 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
     setChainringId('')
     setSprocketId('')
     setLapTimesInput('')
+    setRpe('')
     setNotes('')
     setError('')
     onClose()
@@ -169,6 +172,34 @@ export function AddLapTimeModal({ isOpen, onClose }: AddLapTimeModalProps) {
           <p className="mt-1 text-gray-500 text-xs">
             Format: SS.mmm or M:SS.mmm (e.g., 12.345 or 1:23.456)
           </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            RPE (optional, 1-10)
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={rpe || '5'}
+              onChange={(e) => setRpe(e.target.value)}
+              className="flex-1 accent-primary-500"
+            />
+            <span className={`w-8 text-center font-semibold ${rpe ? 'text-primary-500' : 'text-gray-600'}`}>
+              {rpe || '—'}
+            </span>
+            {rpe && (
+              <button
+                type="button"
+                onClick={() => setRpe('')}
+                className="text-xs text-gray-500 hover:text-gray-300"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         <Input

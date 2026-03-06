@@ -1,4 +1,7 @@
 export { useChainrings, useAddChainring, useUpdateChainring, useDeleteChainring } from './useChainrings'
 export { useSprockets, useAddSprocket, useUpdateSprocket, useDeleteSprocket } from './useSprockets'
-export { useLapSessions, useLapSession, useAddLapSession, useDeleteLapSession } from './useLapSessions'
+export { useLapSessions, useLapSession, useAddLapSession, useUpdateLapSession, useDeleteLapSession } from './useLapSessions'
 export { useStats } from './useStats'
+export { usePersonalBests, usePBHistory } from './usePersonalBests'
+export { useTrainingLoad } from './useTrainingLoad'
+export { useCommunityBenchmarks } from './useCommunityBenchmarks'

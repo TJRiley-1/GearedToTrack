@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { GoogleSignInButton } from '../components/auth'
+import { Logo } from '../components/common'
 import { useAuthStore } from '../store/authStore'
 import { APP_VERSION } from '../version'
 
@@ -63,11 +64,7 @@ export function Landing() {
       <header className="pt-12 pb-8 px-6 text-center">
         {/* Logo */}
         <div className="flex items-center justify-center mb-4">
-          <img
-            src="/images/logo-horizontal.png"
-            alt="Geared to Track"
-            className="h-24 w-auto"
-          />
+          <Logo variant="horizontal" />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">Your Track Cycling Companion</h1>
         <p className="text-gray-400 text-lg">Calculate gear ratios, track lap times, and monitor your progress</p>

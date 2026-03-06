@@ -12,6 +12,7 @@ import {
   Home,
   Gears,
   Times,
+  Performance,
   Profile,
 } from './pages'
 
@@ -30,21 +31,27 @@ function AppRoutes() {
   useEffect(() => {
     initialize()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          setUser(session.user)
-          setSession(session)
-          await fetchProfile()
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
-          setSession(null)
+    let subscription: { unsubscribe: () => void } | null = null
+    try {
+      const { data } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (event === 'SIGNED_IN' && session) {
+            setUser(session.user)
+            setSession(session)
+            await fetchProfile()
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null)
+            setSession(null)
+          }
         }
-      }
-    )
+      )
+      subscription = data.subscription
+    } catch (error) {
+      console.warn('Failed to subscribe to auth state changes:', error)
+    }
 
     return () => {
-      subscription.unsubscribe()
+      subscription?.unsubscribe()
     }
   }, [initialize, setUser, setSession, fetchProfile])
 
@@ -85,6 +92,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Times />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/performance"
+        element={
+          <ProtectedRoute>
+            <Performance />
           </ProtectedRoute>
         }
       />

@@ -13,7 +13,7 @@ test.describe('Deployment Check', () => {
     await expect(page).toHaveTitle(/GearedtoTrack/i)
 
     // Check logo is visible
-    await expect(page.getByAltText('Geared to Track')).toBeVisible()
+    await expect(page.getByRole('img', { name: 'Geared to Track' })).toBeVisible()
 
     // Check Google sign-in button exists
     await expect(page.getByRole('button', { name: /Continue with Google/i })).toBeVisible()
