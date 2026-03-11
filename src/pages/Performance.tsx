@@ -37,9 +37,7 @@ export function Performance() {
       />
 
       <div className="space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4">
-          <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-        </div>
+        <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
 
         {activeTab === 'bests' && <PBTimeline />}
         {activeTab === 'power' && <PowerEstimator />}

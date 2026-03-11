@@ -15,7 +15,7 @@ const tabs = [
   { id: 'ratios', label: 'Ratios' },
   { id: 'chainrings', label: 'Chainrings' },
   { id: 'sprockets', label: 'Sprockets' },
-  { id: 'calculator', label: 'Calculator' },
+  { id: 'calculator', label: 'Speed/Cadence' },
   { id: 'compare', label: 'Compare' },
   { id: 'advice', label: 'Advice' },
 ]
@@ -51,9 +51,7 @@ export function Gears() {
       />
 
       <div className="space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4">
-          <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
-        </div>
+        <TabGroup tabs={tabs} activeTab={activeTab} onChange={handleTabChange} />
 
         {activeTab === 'ratios' && <RatiosTab />}
         {activeTab === 'chainrings' && (

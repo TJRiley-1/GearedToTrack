@@ -10,15 +10,21 @@ interface TabGroupProps {
 }
 
 export function TabGroup({ tabs, activeTab, onChange }: TabGroupProps) {
+  const useGrid = tabs.length > 4
+
   return (
-    <div className="flex bg-navy-800 rounded-lg p-1 border border-navy-700">
+    <div
+      className={`bg-navy-800 rounded-lg p-1 border border-navy-700 ${
+        useGrid ? 'grid grid-cols-3 gap-1' : 'flex'
+      }`}
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
           className={`
-            flex-1 py-2 px-4 rounded-md text-sm font-medium
-            transition-colors duration-200
+            ${useGrid ? '' : 'flex-1'} py-2 px-3 rounded-md text-sm font-medium
+            transition-colors duration-200 whitespace-nowrap text-center
             ${
               activeTab === tab.id
                 ? 'bg-primary-500 text-white'

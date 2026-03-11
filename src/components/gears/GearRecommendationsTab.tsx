@@ -137,17 +137,17 @@ export function GearRecommendationsTab() {
             {allLevels.map((rec) => (
               <div
                 key={rec.level}
-                className={`flex items-center justify-between py-1 text-sm rounded px-2 ${
+                className={`grid grid-cols-[1fr_auto_auto] items-center gap-x-4 py-1.5 text-sm rounded px-2 ${
                   rec.level === level ? 'bg-navy-700' : ''
                 }`}
               >
                 <span className={`capitalize ${rec.level === level ? 'text-primary-500 font-medium' : 'text-gray-400'}`}>
                   {rec.level}
                 </span>
-                <span className="text-white">
+                <span className="text-white text-right tabular-nums">
                   {rec.minRatio.toFixed(1)} – {rec.maxRatio.toFixed(1)}
                 </span>
-                <span className="text-gray-500 text-xs">
+                <span className="text-gray-500 text-xs text-right tabular-nums w-10">
                   {rec.typicalChainring}/{rec.typicalSprocket}
                 </span>
               </div>
