@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppLayout, PageHeader } from '../components/layout'
 import { Card, Button, Modal } from '../components/common'
-import { UserCard, BikeSetup, DataSharingSettings } from '../components/profile'
+import { UserCard, BikeSetup } from '../components/profile'
 import { useAuthStore } from '../store/authStore'
 import { APP_VERSION } from '../version'
 
@@ -32,7 +32,6 @@ export function Profile() {
       <div className="space-y-6">
         <UserCard />
         <BikeSetup />
-        <DataSharingSettings />
 
         {/* About Section */}
         <Card>
