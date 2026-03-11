@@ -1,9 +1,128 @@
 import { useState } from 'react'
-import { Card, Button, EmptyState, ConfirmModal } from '../common'
+import { Card, Button, Input, EmptyState, ConfirmModal } from '../common'
 import { useSprockets, useDeleteSprocket, useUpdateSprocket } from '../../hooks'
 import { useToastStore } from '../../store/toastStore'
 import { AddSprocketModal } from './AddSprocketModal'
 import type { Sprocket } from '../../types'
+
+interface SprocketCardProps {
+  sprocket: Sprocket
+  onToggleFavorite: () => void
+  onDelete: () => void
+  onUpdate: (updates: { brand?: string | null; purchase_date?: string | null }) => Promise<unknown>
+  isDeleting: boolean
+}
+
+function SprocketCard({ sprocket, onToggleFavorite, onDelete, onUpdate, isDeleting }: SprocketCardProps) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [brand, setBrand] = useState(sprocket.brand || '')
+  const [purchaseDate, setPurchaseDate] = useState(sprocket.purchase_date || '')
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      await onUpdate({
+        brand: brand.trim() || null,
+        purchase_date: purchaseDate || null,
+      })
+      setIsEditing(false)
+    } catch {
+      // error handled by parent
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setBrand(sprocket.brand || '')
+    setPurchaseDate(sprocket.purchase_date || '')
+    setIsEditing(false)
+  }
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onToggleFavorite}
+            className="text-gray-400 hover:text-primary-500 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              fill={sprocket.is_favorite ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
+            </svg>
+          </button>
+          <div>
+            <p className="text-white font-semibold">{sprocket.teeth}T</p>
+            {sprocket.brand && !isEditing && (
+              <p className="text-gray-400 text-sm">{sprocket.brand}</p>
+            )}
+            {sprocket.purchase_date && !isEditing && (
+              <p className="text-gray-500 text-xs">{new Date(sprocket.purchase_date).toLocaleDateString()}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-gray-400 hover:text-gray-300 transition-colors"
+              title="Edit details"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {isEditing && (
+        <div className="mt-3 pt-3 border-t border-navy-700 space-y-3">
+          <Input
+            label="Brand"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            placeholder="e.g., Shimano, EAI"
+          />
+          <Input
+            label="Purchase Date"
+            type="date"
+            value={purchaseDate}
+            onChange={(e) => setPurchaseDate(e.target.value)}
+          />
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={handleCancel} className="flex-1">
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave} isLoading={isSaving} className="flex-1">
+              Save
+            </Button>
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
 
 interface SprocketsListProps {
   showAddModal?: boolean
@@ -107,43 +226,14 @@ export function SprocketsList({ showAddModal = false, onCloseAddModal }: Sprocke
         </div>
 
         {sprockets.map((sprocket) => (
-          <Card key={sprocket.id} className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => handleToggleFavorite(sprocket)}
-                className="text-gray-400 hover:text-primary-500 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill={sprocket.is_favorite ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                  />
-                </svg>
-              </button>
-              <div>
-                <p className="text-white font-semibold">{sprocket.teeth}T</p>
-                {sprocket.brand && (
-                  <p className="text-gray-400 text-sm">{sprocket.brand}</p>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => setConfirmDeleteId(sprocket.id)}
-              disabled={deletingId === sprocket.id}
-              className="text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </Card>
+          <SprocketCard
+            key={sprocket.id}
+            sprocket={sprocket}
+            onToggleFavorite={() => handleToggleFavorite(sprocket)}
+            onDelete={() => setConfirmDeleteId(sprocket.id)}
+            onUpdate={(updates) => updateSprocket.mutateAsync({ id: sprocket.id, ...updates })}
+            isDeleting={deletingId === sprocket.id}
+          />
         ))}
       </div>
 
