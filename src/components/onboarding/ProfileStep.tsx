@@ -27,6 +27,11 @@ export function ProfileStep({ onNext }: ProfileStepProps) {
       await updateProfile({
         name: name.trim(),
         age: age ? parseInt(age, 10) : null,
+        share_data_enabled: true,
+        share_age: true,
+        share_lap_times: true,
+        share_gear_ratios: true,
+        onboarding_completed: true,
       })
       onNext()
     } catch (err) {
@@ -43,9 +48,7 @@ export function ProfileStep({ onNext }: ProfileStepProps) {
       <div className="pt-8 px-6">
         <div className="flex gap-2 max-w-md mx-auto">
           <div className="flex-1 h-1 bg-primary-500 rounded-full" />
-          <div className="flex-1 h-1 bg-navy-700 rounded-full" />
         </div>
-        <p className="text-center text-gray-400 text-sm mt-3">Step 1 of 2</p>
       </div>
 
       {/* Content */}
@@ -78,7 +81,7 @@ export function ProfileStep({ onNext }: ProfileStepProps) {
               value={age}
               onChange={(e) => setAge(e.target.value)}
               placeholder="Enter your age"
-              hint="Used for anonymized community statistics"
+              hint="Used for BC standards age group matching"
             />
 
             {error && (
@@ -90,7 +93,7 @@ export function ProfileStep({ onNext }: ProfileStepProps) {
               className="w-full"
               isLoading={isLoading}
             >
-              Continue
+              Get Started
             </Button>
           </form>
         </div>
